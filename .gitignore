@@ -1,2 +1,5 @@
+#ignore hidden directories
+.*
+.*/
 #ignore build files from CMake
 build/*

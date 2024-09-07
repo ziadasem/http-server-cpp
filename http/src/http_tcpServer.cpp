@@ -1,22 +1,25 @@
-#include "../headers/http_tcpServer.hpp"
+#include "../include/http_tcpServer.hpp"
 
 #include <iostream>
 #include <sstream>
-#include <unistd.h>
-
 
 namespace http
 {
 
     const int BUFFER_SIZE = 30720;
 
+    /** @brief Initalize server
+    * @param ip_address IP address of the server
+    * @param port Port of the server
+    * @post initalize socket and threadpool and platform specific APIs
+    * @note due to different APIs between Windows and Linux, some macros are used to generate code based on targeting platform
+    */
     TcpServer::TcpServer(std::string ip_address, int port ) : m_ip_address(ip_address), m_port(port), m_socket(), m_new_socket(),
                                                              m_incomingMessage(),
                                                              m_socketAddress(), m_socketAddress_len(sizeof(m_socketAddress))
                                                              #ifdef WindowsOS
                                                              , m_wsaData()
                                                              #endif
-                                                             //m_serverMessage(buildResponse("<!DOCTYPE html><html lang=\"en\"><body><h1> HOME </h1><p> Hello from your Server :) </p></body></html>"))
     {
         m_socketAddress.sin_family = AF_INET;
         m_socketAddress.sin_port = htons(m_port);
@@ -31,19 +34,26 @@ namespace http
 
     }
 
+
     TcpServer::~TcpServer()
     {
         closeServer();
     }
 
+    /*
+    @throw exit with error in case of:
+        - Cannot create socket
+        - Cannot connect socket to address
+    */
     int TcpServer::startServer()
     {
-#ifdef WindowsOS
-        if (WSAStartup(MAKEWORD(2, 0), &m_wsaData) != 0)
-        {
-            exitWithError("WSAStartup failed");
-        }
-#endif
+        //windows specific initialization
+        #ifdef WindowsOS
+            if (WSAStartup(MAKEWORD(2, 0), &m_wsaData) != 0)
+            {
+                exitWithError("WSAStartup failed");
+            }
+        #endif
 
         m_socket = socket(AF_INET, SOCK_STREAM, 0);
         if (m_socket < 0)
@@ -61,18 +71,30 @@ namespace http
         return 0;
     }
 
+    /*
+        closes the socket, the code uses platform specific APIs
+    */
     void TcpServer::closeServer()
     {
-        
-        close(m_socket);
-        close(m_new_socket);
+        //since the function used platform specific APIs, it uses Macros to generate the appropriate API call based on the platform.
         #ifdef WindowsOS
             WSACleanup();
+            closesocket(m_socket);
+            closesocket(m_new_socket);
         #endif
+
+        #ifdef LinuxOS
+            close(m_socket);
+            close(m_new_socket);
+        #endif
+
         exit(0);
     }
 
-    void TcpServer::startListen()
+    /*
+    @brief an infinite loop listening and accepting new connections and logging
+    */
+    void TcpServer::startListening()
     {
         if (listen(m_socket, 20) < 0)
         {
@@ -84,7 +106,6 @@ namespace http
         log(ss.str());
 
         int bytesReceived;
-        ThreadPool threadpool;
         while (true)
         {
             log("====== Waiting for a new connection ======\n\n\n");
@@ -93,7 +114,7 @@ namespace http
             char buffer[BUFFER_SIZE] = {0};
             #ifdef WindowsOS
                 bytesReceived = recv(m_new_socket, buffer, BUFFER_SIZE, 0);
-            #elif
+            #else
                 bytesReceived = read(m_new_socket, buffer, BUFFER_SIZE);
             #endif
             
@@ -101,12 +122,21 @@ namespace http
             {
                 exitWithError("Failed to read bytes from client socket connection");
             }
+            //overrided in the base, so that it calls its specific routing function
             get(buffer);
 
-            close(m_new_socket);
+            #ifdef WindowsOS
+               closesocket(m_new_socket);
+            #else
+                close(m_new_socket);
+            #endif
+            
         }
     }
 
+    /*
+    @brief accepting a new connection and bind to a new socket
+    */
     void TcpServer::acceptConnection(int &new_socket)
     {
         new_socket = accept(m_socket, (sockaddr *)&m_socketAddress, (int *)&m_socketAddress_len);
@@ -118,7 +148,7 @@ namespace http
         }
     }
 
-    //virtual
+    //virtual function to handle new connections
     void TcpServer::get(const std::string& data){
          std::ostringstream ss;
         ss << "------ Received Request from client ------\n\n";
@@ -131,12 +161,18 @@ namespace http
 
 
 
-
+    /*
+    @brief a wrapper around cout << <<endl;
+    */
     void TcpServer::log(const std::string &message)
     {
         std::cout << message << std::endl;
     }
 
+    /*
+    @brief exit the program and printing the error reason
+    @param errorMessage the message that will be logged
+    */
     void TcpServer::exitWithError(const std::string &errorMessage)
     {
         #ifdef WindowsOS
@@ -147,4 +183,4 @@ namespace http
     }
    
 
-} // namespace http
+}

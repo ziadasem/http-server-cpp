@@ -2,7 +2,8 @@
 #define INCLUDED_HTTP_TCPSERVER_LINUX
 
 #include <stdio.h>
-#include "threadPool.hpp"
+#include "../dependencies/threadpool/include/threadpool.hpp"
+
 
 #ifdef LinuxOS
     #include <sys/socket.h>
@@ -30,7 +31,7 @@ namespace http
     protected:
         int m_new_socket;
         
-        void startListen( );
+        void startListening( );
         void log(const std::string &message);
         void exitWithError(const std::string &errorMessage);
         virtual void get(const std::string& data);

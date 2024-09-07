@@ -6,7 +6,6 @@
 #include <map>
 #include <string>
 
-
 #ifdef LinuxOS
     #include <unistd.h>
 #endif
@@ -26,8 +25,9 @@ class Server  : public TcpServer {
         void startServer();        
         void registerEndpoint(const std::string& endpoint, const std::string& method, std::function<void(const std::string& data)> callback);
         void get(const std::string& data);
+        void resetThreadPoolNumber(int newNum);
     private:
-        ThreadPool m_threadpool{1};
+        ThreadPool m_threadpool;
         std::map<std::string, std::map<std::string, std::function<void(const std::string& data)> >> m_endpoints;
 
         std::string filterData(std::string data);

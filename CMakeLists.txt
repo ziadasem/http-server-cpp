@@ -22,19 +22,35 @@ include_directories(http/headers)
 file(GLOB SOURCES http/src/*.cpp)
 
 
-
-# Add the executable
-#add_executable(server
-#    http/src/threadpool.cpp
-#    http/src/http_tcpServer.cpp
-#    http/src/http_server.cpp
-#)
+#add dependencies
+add_subdirectory(http/dependencies/threadpool)
 
 
 
-# Create shared library
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
+option(GEN_HSRV_EXE "Generate an execuatable for testing http server, by default is true" ON)
+
+
+if(GEN_HSRV_EXE)
+ 
+    # Add the executable
+    add_executable(ServerLibTest
+        http-server-driver.cpp
+        http/src/http_tcpServer.cpp
+        http/src/http_server.cpp
+    )
+
+    # Link the library from threadpool to the main executable
+    target_link_libraries(ServerLibTest threadpool)
+    if(WIN32)
+        target_link_libraries(ServerLibTest ws2_32)
+    endif()
+
+endif()
+
+
+#generate static library
+add_library(${PROJECT_NAME}  ${SOURCES})
 if(WIN32)
-    target_link_libraries(ServerLib ws2_32)
+    target_link_libraries(${PROJECT_NAME}  ws2_32)
 endif()

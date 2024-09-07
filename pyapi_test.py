@@ -1,7 +1,7 @@
 import time
 import requests
 
-url = "http://192.168.100.9:8081/"
+url = "http://192.168.100.4:8081/"
 
 # GET request
 def get_request():
