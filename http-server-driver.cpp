@@ -7,11 +7,21 @@
 
 int main(int argC, char **argv)
 {
-    http::Server server = http::Server(argv[1], 8081); //bind to local IP
+    std::string ipaddress ;
+    int port ;
+    if (argC != 3){
+        std::cerr << "[Warning]: No IP and port number are enterd. use default IP:PortNumber 127.0.0.1:8081" << std::endl;
+        ipaddress = const_cast<char*>("127.0.0.1");
+        port = 8081;
+    }else{
+        ipaddress = argv[1];
+        port = std::stoi(argv[2]);
+    }
+    http::Server server = http::Server(ipaddress, port); //bind to local IP
     auto handleDefualtRoute = [&server](const std::string& s) { 
-            
-            server.post("<h1>Hello from Server</h1>");
-            //std::this_thread::sleep_for(std::chrono::seconds(5)); //simulate some delay
+
+            server.post("<h1>Hello from Server " + s + "</h1>" );
+            std::this_thread::sleep_for(std::chrono::seconds(5)); //simulate some delay
     };
     
     

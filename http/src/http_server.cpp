@@ -27,7 +27,6 @@ namespace http{
         std::string method, endpoint;
         requestStream >> method >> endpoint;
         std::string filterdData  = filterData(data);
-    
         m_threadpool.addTask(
             [this, endpoint, method, filterdData]
             (){
@@ -48,10 +47,8 @@ namespace http{
         std::string _body = buildResponse(body);
 
         #ifdef WindowsOS
-            log("I am windows");
             bytesSent = send(m_new_socket, _body.c_str(), _body.size(), 0);
         #else
-             log("I am Linuuux");
             bytesSent = write(m_new_socket, _body.c_str(), _body.size());
         #endif
         if (bytesSent == _body.size())

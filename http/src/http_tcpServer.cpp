@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 
+
 namespace http
 {
 
@@ -124,13 +125,9 @@ namespace http
             }
             //overrided in the base, so that it calls its specific routing function
             get(buffer);
-
-            #ifdef WindowsOS
-               closesocket(m_new_socket);
-            #else
-                close(m_new_socket);
-            #endif
             
+            close(m_new_socket);
+
         }
     }
 
