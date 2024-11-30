@@ -147,12 +147,12 @@ namespace http
 
     //virtual function to handle new connections
     void TcpServer::get(const std::string& data){
-         std::ostringstream ss;
-        ss << "------ Received Request from client ------\n\n";
-        log(ss.str());
-        std::istringstream requestStream(data);
-        std::string method, endpoint;
-        requestStream >> method >> endpoint;
+        // std::ostringstream ss;
+        // ss << "------ Received Request from client -base ------\n\n";
+        // log(ss.str());
+        // std::istringstream requestStream(data);
+        // std::string method, endpoint;
+        // requestStream >> method >> endpoint;
         
     }
 
@@ -163,7 +163,9 @@ namespace http
     */
     void TcpServer::log(const std::string &message)
     {
-        std::cout << message << std::endl;
+        #if DEBUG == 1
+            std::cout << message << std::endl;
+        #endif
     }
 
     /*

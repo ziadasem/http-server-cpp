@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "../dependencies/threadpool/include/threadpool.hpp"
 
+#define DEBUG 1
 
 #ifdef LinuxOS
     #include <sys/socket.h>

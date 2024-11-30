@@ -20,13 +20,15 @@ namespace http{
     {   
         std::ostringstream ss;
         ss << "------ Received Request from client------\n\n";
-        log(ss.str());
-       
-            
+        ss << data << "\n\n------ End of Request ------\n";
+        //log(ss.str());
+          
         std::istringstream requestStream(data);
         std::string method, endpoint;
         requestStream >> method >> endpoint;
         std::string filterdData  = filterData(data);
+        log("Received data:");
+        log(filterdData);
         m_threadpool.addTask(
             [this, endpoint, method, filterdData]
             (){
@@ -66,8 +68,12 @@ namespace http{
     */
     std::string Server::filterData(std::string data) {
         int pos = -1 ;
+        int tempPos ;
         for (int i = 0 ; i < 9 ; i++){ //skip 9 lines
-            pos = data.find("\r\n",pos + 2);
+            tempPos = data.find("\n",pos + 1);
+            if (tempPos != -1){
+                pos = tempPos;
+            }
         }
         return data.substr(pos + 1, data.length()  - pos);
     }
